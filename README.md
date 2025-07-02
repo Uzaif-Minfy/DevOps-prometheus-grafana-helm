@@ -548,4 +548,122 @@ No resources found in monitoring namespace.
 ubuntu@ip-172-31-4-180:~/docker-voting-app/kind-cluster$ kubectl get pods -n monitoring-uzaif
 No resources found in monitoring-uzaif namespace.
 ubuntu@ip-172-31-4-180:~/docker-voting-app/kind-cluster$
+ubuntu@ip-172-31-4-180:~/docker-voting-app/kind-cluster$ kubectl get namespaces
+NAME                 STATUS   AGE
+default              Active   53m
+kube-node-lease      Active   53m
+kube-public          Active   53m
+kube-system          Active   53m
+local-path-storage   Active   53m
+monitoring-uzaif     Active   31m
+ubuntu@ip-172-31-4-180:~/docker-voting-app/kind-cluster$ helm list
+NAME    NAMESPACE       REVISION        UPDATED STATUS  CHART   APP VERSION
+ubuntu@ip-172-31-4-180:~/docker-voting-app/kind-cluster$ helm list all
+Error: "helm list" accepts no arguments
+
+Usage:  helm list [flags]
+ubuntu@ip-172-31-4-180:~/docker-voting-app/kind-cluster$ helm list-a
+Error: unknown command "list-a" for "helm"
+
+Did you mean this?
+        list
+
+Run 'helm --help' for usage.
+ubuntu@ip-172-31-4-180:~/docker-voting-app/kind-cluster$ helm list -a
+NAME    NAMESPACE       REVISION        UPDATED STATUS  CHART   APP VERSION
+ubuntu@ip-172-31-4-180:~/docker-voting-app/kind-cluster$ helm install kind-prometheus prometheus-community/kube-prometheus-stack --namespace monitoring-uzaif --set prometheus.service.type=NodePort --set prometheus.service.nodePort=30000 --set grafana.service.type=NodePort --set grafana.service.nodePort=31000 --set alertmanager.service.type=NodePort --set alertmanager.service.nodePort=32000
+Error: INSTALLATION FAILED: Unable to continue with install: ClusterRole "kind-prometheus-kube-prome-operator" in namespace "" exists and cannot be imported into the current release: invalid ownership metadata; annotation validation error: key "meta.helm.sh/release-namespace" must equal "monitoring-uzaif": current value is "monitoring"
+ubuntu@ip-172-31-4-180:~/docker-voting-app/kind-cluster$ helm upgrade kind-prometheus prometheus-community/kube-prometheus-stack --namespace monitoring-uzaif --set prometheus.service.type=NodePort --set prometheus.service.nodePort=30000 --set grafana.service.type=NodePort --set grafana.service.nodePort=31000 --set alertmanager.service.type=NodePort --set alertmanager.service.nodePort=32000
+Error: UPGRADE FAILED: "kind-prometheus" has no deployed releases
+ubuntu@ip-172-31-4-180:~/docker-voting-app/kind-cluster$ helm list -a -n monitoring-uzaif
+NAME    NAMESPACE       REVISION        UPDATED STATUS  CHART   APP VERSION
+ubuntu@ip-172-31-4-180:~/docker-voting-app/kind-cluster$ helm list -a -n monitoring
+NAME    NAMESPACE       REVISION        UPDATED STATUS  CHART   APP VERSION
+ubuntu@ip-172-31-4-180:~/docker-voting-app/kind-cluster$ helm list -a
+NAME    NAMESPACE       REVISION        UPDATED STATUS  CHART   APP VERSION
+ubuntu@ip-172-31-4-180:~/docker-voting-app/kind-cluster$ kubectl get all
+NAME                          READY   STATUS    RESTARTS   AGE
+pod/db-597b4ff8d7-6kzq7       1/1     Running   0          48m
+pod/redis-796dc594bb-k8r2c    1/1     Running   0          48m
+pod/result-d8c4c69b8-j95mb    1/1     Running   0          48m
+pod/vote-69cb46f6fb-qqbtf     1/1     Running   0          48m
+pod/worker-5dd767667f-q2fk6   1/1     Running   0          48m
+
+NAME                 TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
+service/db           ClusterIP   10.96.139.103   <none>        5432/TCP         48m
+service/kubernetes   ClusterIP   10.96.0.1       <none>        443/TCP          60m
+service/redis        ClusterIP   10.96.115.19    <none>        6379/TCP         48m
+service/result       NodePort    10.96.236.114   <none>        5001:31001/TCP   48m
+service/vote         NodePort    10.96.177.227   <none>        5000:31002/TCP   48m
+
+NAME                     READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/db       1/1     1            1           48m
+deployment.apps/redis    1/1     1            1           48m
+deployment.apps/result   1/1     1            1           48m
+deployment.apps/vote     1/1     1            1           48m
+deployment.apps/worker   1/1     1            1           48m
+
+NAME                                DESIRED   CURRENT   READY   AGE
+replicaset.apps/db-597b4ff8d7       1         1         1       48m
+replicaset.apps/redis-796dc594bb    1         1         1       48m
+replicaset.apps/result-d8c4c69b8    1         1         1       48m
+replicaset.apps/vote-69cb46f6fb     1         1         1       48m
+replicaset.apps/worker-5dd767667f   1         1         1       48m
+ubuntu@ip-172-31-4-180:~/docker-voting-app/kind-cluster$ kubectl create namespace monitoring
+namespace/monitoring created
+ubuntu@ip-172-31-4-180:~/docker-voting-app/kind-cluster$ helm install kind-prometheus prometheus-community/kube-prometheus-stack --namespace monitoring --set prometheus.service.type=NodePort --set prometheus.service.nodePort=30000 --set grafana.service.type=NodePort --set grafana.service.nodePort=31000 --set alertmanager.service.type=NodePort --set alertmanager.service.nodePort=32000
+NAME: kind-prometheus
+LAST DEPLOYED: Wed Jul  2 08:37:21 2025
+NAMESPACE: monitoring
+STATUS: deployed
+REVISION: 1
+NOTES:
+kube-prometheus-stack has been installed. Check its status by running:
+  kubectl --namespace monitoring get pods -l "release=kind-prometheus"
+
+Get Grafana 'admin' user password by running:
+
+  kubectl --namespace monitoring get secrets kind-prometheus-grafana -o jsonpath="{.data.admin-password}" | base64 -d ; echo
+
+Access Grafana local instance:
+
+  export POD_NAME=$(kubectl --namespace monitoring get pod -l "app.kubernetes.io/name=grafana,app.kubernetes.io/instance=kind-prometheus" -oname)
+  kubectl --namespace monitoring port-forward $POD_NAME 3000
+
+Visit https://github.com/prometheus-operator/kube-prometheus for instructions on how to create & configure Alertmanager and Prometheus instances using the Operator.
+ubuntu@ip-172-31-4-180:~/docker-voting-app/kind-cluster$ kubectl get pods -n monitoring
+NAME                                                     READY   STATUS    RESTARTS   AGE
+alertmanager-kind-prometheus-kube-prome-alertmanager-0   2/2     Running   0          116s
+kind-prometheus-grafana-7565dc9bdf-jm8bv                 3/3     Running   0          118s
+kind-prometheus-kube-prome-operator-df978f4df-442l8      1/1     Running   0          118s
+kind-prometheus-kube-state-metrics-698d8db8c5-xp4nj      1/1     Running   0          118s
+kind-prometheus-prometheus-node-exporter-799nr           1/1     Running   0          118s
+kind-prometheus-prometheus-node-exporter-vpm8s           1/1     Running   0          118s
+kind-prometheus-prometheus-node-exporter-xvjcl           1/1     Running   0          118s
+prometheus-kind-prometheus-kube-prome-prometheus-0       2/2     Running   0          115s
+ubuntu@ip-172-31-4-180:~/docker-voting-app/kind-cluster$ kubectl port-forward svc/kind-prometheus-kube-prome-prometheus -n monitoring 9090:9090 --address 0.0.0.0 &
+[1] 14430
+ubuntu@ip-172-31-4-180:~/docker-voting-app/kind-cluster$ Forwarding from 0.0.0.0:9090 -> 9090
+Handling connection for 9090
+Handling connection for 9090
+Handling connection for 9090
+Handling connection for 9090
+Handling connection for 9090
+^C
+ubuntu@ip-172-31-4-180:~/docker-voting-app/kind-cluster$ kubectl port-forward -n monitoring svc/kind-prometheus-grafana 3000:80 --address 0.0.0.0 &
+[2] 14650
+ubuntu@ip-172-31-4-180:~/docker-voting-app/kind-cluster$ Forwarding from 0.0.0.0:3000 -> 3000
+Handling connection for 3000
+Handling connection for 3000
+Handling connection for 3000
+Handling connection for 3000
+Handling connection for 3000
+Handling connection for 3000
+Handling connection for 3000
+Handling connection for 3000
+Handling connection for 3000
+Handling connection for 3000
+Handling connection for 9090
+Handling connection for 9090
+Handling connection for 9090
 ```
